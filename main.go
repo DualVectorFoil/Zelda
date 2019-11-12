@@ -1,6 +1,6 @@
 package main
 
-import "Zelda/router"
+import "github.com/DualVectorFoil/Zelda/router"
 
 func main() {
 	router.InitRouter()

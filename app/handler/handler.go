@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"Zelda/controller"
+	"github.com/DualVectorFoil/Zelda/app/ctrl"
+	"github.com/DualVectorFoil/Zelda/controller"
 	"sync"
 )
 
@@ -15,7 +16,7 @@ var handlerOnce sync.Once
 func GetHandlerInstance() *handler {
 	handlerOnce.Do(func() {
 		h = &handler{
-			UserCtrl: controller.NewUserCtrl(),
+			UserCtrl: ctrl.UserCtrl,
 		}
 	})
 	return h

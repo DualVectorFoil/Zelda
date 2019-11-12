@@ -1,7 +1,7 @@
 package router
 
 import (
-	"Zelda/handler"
+	"github.com/DualVectorFoil/Zelda/app/handler"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,7 +13,7 @@ func InitRouter() {
 	router.NoRoute(notFound)
 	router.POST("/login", h.UserCtrl.Login)
 	router.POST("/register", h.UserCtrl.Register)
-	router.GET("/verify_code", h.UserCtrl.VerifyCode)
+	router.POST("/verify_code", h.UserCtrl.VerifyCode)
 	router.POST("/modify_password", h.UserCtrl.ModifyPassword)
 
 	router.Run(":8080")
