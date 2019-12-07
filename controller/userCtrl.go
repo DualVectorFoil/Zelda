@@ -10,6 +10,7 @@ import (
 	"github.com/DualVectorFoil/Zelda/model"
 	jsonUtils "github.com/DualVectorFoil/Zelda/utils/json"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -42,10 +43,9 @@ func (ctrl *UserCtrl) VerifyCode(ctx *gin.Context) {
 	err := sendVerifyCode(phoneNum, verifyCode)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, jsonUtils.JsonResp(http.StatusInternalServerError, "verify code send failed, server error occured."))
-		return
+		// TODO return
 	}
 
-	// TODO 将phoneNum、verifyCode通过dao存入redis中，过期5分钟，本地cookie内存中存储，不用存到redis
 	err = ctrl.VerifyCodeDao.SetVerifyCodeInfo(ctx.Request.Context(), phoneNum, verifyCode)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, jsonUtils.JsonResp(http.StatusInternalServerError, "set verify code in redis failed."))
@@ -71,7 +71,11 @@ func sendVerifyCode(phoneNum string, verifyCode string) error {
 	})
 
 	if err != nil {
-		fmt.Println("sendVerifyCode failed.")
+		logrus.WithFields(logrus.Fields{
+			"phoneNum": phoneNum,
+			"verifyCode": verifyCode,
+			"err": err.Error(),
+		}).Error("sendVerifyCode failed.")
 		return err
 	}
 	defer response.Body.Close()
@@ -79,18 +83,30 @@ func sendVerifyCode(phoneNum string, verifyCode string) error {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if err != nil {
-		fmt.Println("sendVerifyCode parse response body failed.")
+		logrus.WithFields(logrus.Fields{
+			"phoneNum": phoneNum,
+			"verifyCode": verifyCode,
+			"err": err.Error(),
+		}).Error("sendVerifyCode parse response body failed.")
 		return err
 	}
 
 	mmsResponse := &model.MMSModel{}
 	err = json.Unmarshal(body, mmsResponse)
 	if err != nil {
-		fmt.Println("sendVerifyCode unmarshall response body failed.")
+		logrus.WithFields(logrus.Fields{
+			"phoneNum": phoneNum,
+			"verifyCode": verifyCode,
+			"err": err.Error(),
+		}).Error("sendVerifyCode unmarshall response body failed.")
 	}
 
 	if mmsResponse.Code != 0 {
-		fmt.Println("response err: " + mmsResponse.Data)
+		logrus.WithFields(logrus.Fields{
+			"phoneNum": phoneNum,
+			"verifyCode": verifyCode,
+			"err": mmsResponse.Data,
+		}).Error("sendVerifyCode unmarshall response body failed.")
 		return errors.New(mmsResponse.Data)
 	}
 

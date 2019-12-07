@@ -3,10 +3,13 @@ package verifycode
 import (
 	"context"
 	"errors"
-	"fmt"
 	pb "github.com/DualVectorFoil/Zelda/protobuf"
 	"github.com/DualVectorFoil/Zelda/utils/ptr"
+	"github.com/sirupsen/logrus"
+	"time"
 )
+
+const MAX_REQUEST_TIME  = time.Second * 3
 
 type VerifyCode struct {
 	Client pb.VerifyCodeServiceClient
@@ -23,14 +26,24 @@ func (v *VerifyCode) SetVerifyCodeInfo(ctx context.Context, phoneNum string, ver
 		PhoneNum:             ptr.StringPtr(phoneNum),
 		VerifyCode:           ptr.StringPtr(verifyCode),
 	}
-	resp, err := v.Client.SetVerifyCodeInfo(ctx, verifyCodeInfo)
+
+	timeoutCtx, _ := context.WithTimeout(ctx, MAX_REQUEST_TIME)
+
+	resp, err := v.Client.SetVerifyCodeInfo(timeoutCtx, verifyCodeInfo)
 	if err != nil {
-		fmt.Println("SetVerifyCodeInfo failed.")
+		logrus.WithFields(logrus.Fields{
+			"phoneNum": phoneNum,
+			"verifyCode": verifyCode,
+			"err": err.Error(),
+		}).Error("SetVerifyCodeInfo failed.")
 		return err
 	}
 
 	if !resp.GetStatus() {
-		fmt.Println("SetVerifyCodeInfo failed.")
+		logrus.WithFields(logrus.Fields{
+			"phoneNum": phoneNum,
+			"verifyCode": verifyCode,
+		}).Error("SetVerifyCodeInfo failed.")
 		return errors.New("SetVerifyCodeInfo failed.")
 	}
 
@@ -42,9 +55,16 @@ func (v *VerifyCode) IsVerifyCodeAvailable(ctx context.Context, phoneNum string,
 		PhoneNum:             ptr.StringPtr(phoneNum),
 		VerifyCode:           ptr.StringPtr(verifyCode),
 	}
-	resp, err := v.Client.IsVerifyCodeAvailable(ctx, verifyCodeInfo)
+
+	timeoutCtx, _ := context.WithTimeout(ctx, MAX_REQUEST_TIME)
+
+	resp, err := v.Client.IsVerifyCodeAvailable(timeoutCtx, verifyCodeInfo)
 	if err != nil {
-		fmt.Println("get IsVerifyCodeAvailable failed.")
+		logrus.WithFields(logrus.Fields{
+			"phoneNum": phoneNum,
+			"verifyCode": verifyCode,
+			"err": err.Error(),
+		}).Error("get IsVerifyCodeAvailable failed.")
 		return false, err
 	}
 
