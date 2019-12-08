@@ -9,22 +9,22 @@ import (
 	"time"
 )
 
-const MAX_REQUEST_TIME  = time.Second * 3
+const MAX_REQUEST_TIME = time.Second * 3
 
-type VerifyCode struct {
+type VerifyCodeDao struct {
 	Client pb.VerifyCodeServiceClient
 }
 
-func NewVerifyCode(client pb.VerifyCodeServiceClient) *VerifyCode {
-	return &VerifyCode{
+func NewVerifyCodeDao(client pb.VerifyCodeServiceClient) *VerifyCodeDao {
+	return &VerifyCodeDao{
 		Client: client,
 	}
 }
 
-func (v *VerifyCode) SetVerifyCodeInfo(ctx context.Context, phoneNum string, verifyCode string) error {
+func (v *VerifyCodeDao) SetVerifyCodeInfo(ctx context.Context, phoneNum string, verifyCode string) error {
 	verifyCodeInfo := &pb.VerifyCodeInfo{
-		PhoneNum:             ptr.StringPtr(phoneNum),
-		VerifyCode:           ptr.StringPtr(verifyCode),
+		PhoneNum:   ptr.StringPtr(phoneNum),
+		VerifyCode: ptr.StringPtr(verifyCode),
 	}
 
 	timeoutCtx, _ := context.WithTimeout(ctx, MAX_REQUEST_TIME)
@@ -32,28 +32,28 @@ func (v *VerifyCode) SetVerifyCodeInfo(ctx context.Context, phoneNum string, ver
 	resp, err := v.Client.SetVerifyCodeInfo(timeoutCtx, verifyCodeInfo)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"phoneNum": phoneNum,
+			"phoneNum":   phoneNum,
 			"verifyCode": verifyCode,
-			"err": err.Error(),
+			"err":        err.Error(),
 		}).Error("SetVerifyCodeInfo failed.")
 		return err
 	}
 
 	if !resp.GetStatus() {
 		logrus.WithFields(logrus.Fields{
-			"phoneNum": phoneNum,
+			"phoneNum":   phoneNum,
 			"verifyCode": verifyCode,
-		}).Error("SetVerifyCodeInfo failed.")
-		return errors.New("SetVerifyCodeInfo failed.")
+		}).Error("Status is false, SetVerifyCodeInfo failed.")
+		return errors.New("Status is false, SetVerifyCodeInfo failed.")
 	}
 
 	return nil
 }
 
-func (v *VerifyCode) IsVerifyCodeAvailable(ctx context.Context, phoneNum string, verifyCode string) (bool, error) {
+func (v *VerifyCodeDao) IsVerifyCodeAvailable(ctx context.Context, phoneNum string, verifyCode string) (bool, error) {
 	verifyCodeInfo := &pb.VerifyCodeInfo{
-		PhoneNum:             ptr.StringPtr(phoneNum),
-		VerifyCode:           ptr.StringPtr(verifyCode),
+		PhoneNum:   ptr.StringPtr(phoneNum),
+		VerifyCode: ptr.StringPtr(verifyCode),
 	}
 
 	timeoutCtx, _ := context.WithTimeout(ctx, MAX_REQUEST_TIME)
@@ -61,9 +61,9 @@ func (v *VerifyCode) IsVerifyCodeAvailable(ctx context.Context, phoneNum string,
 	resp, err := v.Client.IsVerifyCodeAvailable(timeoutCtx, verifyCodeInfo)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"phoneNum": phoneNum,
+			"phoneNum":   phoneNum,
 			"verifyCode": verifyCode,
-			"err": err.Error(),
+			"err":        err.Error(),
 		}).Error("get IsVerifyCodeAvailable failed.")
 		return false, err
 	}

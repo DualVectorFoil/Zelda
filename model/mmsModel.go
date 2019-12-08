@@ -1,6 +1,6 @@
 package model
 
 type MMSModel struct {
-	Code int `json:"code"`
+	Code int    `json:"code"`
 	Data string `json:"data"`
 }

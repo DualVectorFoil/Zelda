@@ -11,10 +11,12 @@ func InitRouter() {
 
 	router := gin.Default()
 	router.NoRoute(notFound)
-	router.POST("/login", h.UserCtrl.Login)
-	router.POST("/register", h.UserCtrl.Register)
-	router.POST("/verify_code", h.UserCtrl.VerifyCode)
-	router.POST("/modify_password", h.UserCtrl.ModifyPassword)
+
+	userRoute := router.Group("/user")
+	userRoute.POST("/login", h.UserCtrl.Login)
+	userRoute.POST("/register", h.UserCtrl.Register)
+	userRoute.POST("/verify_code", h.UserCtrl.VerifyCode)
+	userRoute.POST("/modify_password", h.UserCtrl.ModifyPassword)
 
 	router.Run(":8080")
 }

@@ -1,5 +1,7 @@
 package client
 
-import "github.com/DualVectorFoil/Zelda/client/marioclient"
+import "github.com/DualVectorFoil/Zelda/client/grpcclient"
 
-var MarioClient = marioclient.NewMarioClient()
+var VerifyCodeClient = grpcclient.NewVerifyCodeClient()
+
+var RegisterUserClient = grpcclient.NewRegisterUserClient()
