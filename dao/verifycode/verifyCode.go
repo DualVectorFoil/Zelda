@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const MAX_REQUEST_TIME = time.Second * 3
+const MAX_REQUEST_TIME = time.Second * 10
 
 type VerifyCodeDao struct {
 	Client pb.VerifyCodeServiceClient
@@ -31,19 +31,10 @@ func (v *VerifyCodeDao) SetVerifyCodeInfo(ctx context.Context, phoneNum string, 
 
 	resp, err := v.Client.SetVerifyCodeInfo(timeoutCtx, verifyCodeInfo)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"phoneNum":   phoneNum,
-			"verifyCode": verifyCode,
-			"err":        err.Error(),
-		}).Error("SetVerifyCodeInfo failed.")
 		return err
 	}
 
 	if !resp.GetStatus() {
-		logrus.WithFields(logrus.Fields{
-			"phoneNum":   phoneNum,
-			"verifyCode": verifyCode,
-		}).Error("Status is false, SetVerifyCodeInfo failed.")
 		return errors.New("Status is false, SetVerifyCodeInfo failed.")
 	}
 

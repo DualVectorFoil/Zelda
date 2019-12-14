@@ -1,6 +1,5 @@
 package conf
 
 const (
-	// TODO
-	MARIO_SERVICE_ADDR = ""
+	MARIO_SERVICE_NAME = "mario_db_service"
 )

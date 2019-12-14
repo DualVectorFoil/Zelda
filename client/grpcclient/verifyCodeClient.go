@@ -13,7 +13,7 @@ var verifyCodeClientOnce sync.Once
 
 func NewVerifyCodeClient() pb.VerifyCodeServiceClient {
 	verifyCodeClientOnce.Do(func() {
-		verifyCodeClient = etcdservice.NewServiceManager(conf.ETCD_ADDRESS).GetClient(conf.MARIO_SERVICE_ADDR, pb.NewVerifyCodeClientWrapper).(pb.VerifyCodeServiceClient)
+		verifyCodeClient = etcdservice.NewServiceManager(conf.ETCD_ADDRESS).GetClient(conf.MARIO_SERVICE_NAME, pb.NewVerifyCodeClientWrapper).(pb.VerifyCodeServiceClient)
 	})
 	return verifyCodeClient
 }

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const MAX_REQUEST_TIME = time.Second * 5
+const MAX_REQUEST_TIME = time.Second * 10
 
 type RegisterUserDao struct {
 	Client pb.RegisterUserServiceClient

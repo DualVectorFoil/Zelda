@@ -12,7 +12,7 @@ var registerUserClientOnce sync.Once
 
 func NewRegisterUserClient() pb.RegisterUserServiceClient {
 	registerUserClientOnce.Do(func() {
-		registerUserClient = etcdservice.NewServiceManager(conf.ETCD_ADDRESS).GetClient(conf.MARIO_SERVICE_ADDR, pb.NewRegisterUserClientWrapper).(pb.RegisterUserServiceClient)
+		registerUserClient = etcdservice.NewServiceManager(conf.ETCD_ADDRESS).GetClient(conf.MARIO_SERVICE_NAME, pb.NewRegisterUserClientWrapper).(pb.RegisterUserServiceClient)
 	})
 	return registerUserClient
 }
