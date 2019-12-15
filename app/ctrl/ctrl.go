@@ -5,4 +5,4 @@ import (
 	"github.com/DualVectorFoil/Zelda/controller"
 )
 
-var UserCtrl = controller.NewUserCtrl(dao.RegisterUserDao, dao.VerifyCodeDao)
+var UserCtrl = controller.NewUserCtrl(dao.LoginUserDao, dao.RegisterUserDao, dao.VerifyCodeDao)

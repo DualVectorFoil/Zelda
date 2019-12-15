@@ -21,19 +21,71 @@ import (
 )
 
 type UserCtrl struct {
+	LoginDao      dao.ILoginUserDao
 	RegisterDao   dao.IRegisterUserDao
 	VerifyCodeDao dao.IVerifyCodeDao
 }
 
-func NewUserCtrl(registerDao dao.IRegisterUserDao, verifyCodeDao dao.IVerifyCodeDao) *UserCtrl {
+func NewUserCtrl(loginDao dao.ILoginUserDao, registerDao dao.IRegisterUserDao, verifyCodeDao dao.IVerifyCodeDao) *UserCtrl {
 	return &UserCtrl{
+		LoginDao:      loginDao,
 		RegisterDao:   registerDao,
 		VerifyCodeDao: verifyCodeDao,
 	}
 }
 
 func (ctrl *UserCtrl) Login(ctx *gin.Context) {
+	token := ctx.Request.Header.Get("token")
+	if token != "" {
+		profileInfo, err := ctrl.LoginDao.LoginUserWithToken(ctx.Request.Context(), token)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"token": token,
+			}).Error(err.Error())
+			return
+		}
+		ctx.String(http.StatusOK, jsonUtils.JsonResp(http.StatusOK, profileInfo))
+		return
+	}
 
+	loginInfoBytes, err := base64.StdEncoding.DecodeString(ctx.PostForm("login_info"))
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"request_login_info": ctx.PostForm("login_info"),
+		}).Error("base64.StdEncoding.DecodeString login info failed, err: " + err.Error())
+		ctx.String(http.StatusBadRequest, jsonUtils.JsonResp(http.StatusBadRequest, nil))
+		return
+	}
+
+	loginInfo := strings.Split(string(loginInfoBytes), ":")
+	if len(loginInfo) != 2 {
+		logrus.WithFields(logrus.Fields{
+			"request_login_info": ctx.PostForm("login_info"),
+		}).Error("Wrong login info, login failed.")
+		ctx.String(http.StatusBadRequest, jsonUtils.JsonResp(http.StatusBadRequest, nil))
+		return
+	}
+
+	userNameInfo, pwd := loginInfo[0], loginInfo[1]
+	if userNameInfo == "" || pwd == "" {
+		logrus.WithFields(logrus.Fields{
+			"request_login_info": ctx.PostForm("login_info"),
+		}).Error("Uncorrected login info, login failed.")
+		ctx.String(http.StatusBadRequest, jsonUtils.JsonResp(http.StatusBadRequest, nil))
+		return
+	}
+
+	profileInfo, err := ctrl.LoginDao.LoginUserWithPWD(ctx.Request.Context(), userNameInfo, pwd)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"userNameInfo": userNameInfo,
+			"pwd":          pwd,
+		}).Error(err.Error())
+		ctx.String(http.StatusBadRequest, jsonUtils.JsonResp(http.StatusBadRequest, nil))
+		return
+	}
+
+	ctx.String(http.StatusOK, jsonUtils.JsonResp(http.StatusOK, profileInfo))
 }
 
 func (ctrl *UserCtrl) Register(ctx *gin.Context) {
@@ -41,8 +93,7 @@ func (ctrl *UserCtrl) Register(ctx *gin.Context) {
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"request_register_info": ctx.PostForm("register_info"),
-			"err":                   err,
-		}).Error("base64.StdEncoding.DecodeString register info failed.")
+		}).Error("base64.StdEncoding.DecodeString register info failed, err: " + err.Error())
 		ctx.String(http.StatusBadRequest, jsonUtils.JsonResp(http.StatusBadRequest, &model.RegisterRespModel{
 			IsSuccess: false,
 			Error:     "base64.StdEncoding.DecodeString register info failed.",
@@ -54,7 +105,6 @@ func (ctrl *UserCtrl) Register(ctx *gin.Context) {
 	if len(registerInfo) != 4 {
 		logrus.WithFields(logrus.Fields{
 			"request_register_info": ctx.PostForm("register_info"),
-			"err":                   err,
 		}).Error("Uncorrected register info.")
 		ctx.String(http.StatusBadRequest, jsonUtils.JsonResp(http.StatusBadRequest, &model.RegisterRespModel{
 			IsSuccess: false,
@@ -67,7 +117,6 @@ func (ctrl *UserCtrl) Register(ctx *gin.Context) {
 	if phoneNum == "" || userName == "" || pwd == "" || verifyCode == "" {
 		logrus.WithFields(logrus.Fields{
 			"request_register_info": ctx.PostForm("register_info"),
-			"err":                   err,
 		}).Error("Uncorrected register info.")
 		ctx.String(http.StatusBadRequest, jsonUtils.JsonResp(http.StatusBadRequest, &model.RegisterRespModel{
 			IsSuccess: false,
